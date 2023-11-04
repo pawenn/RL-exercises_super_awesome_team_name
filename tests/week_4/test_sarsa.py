@@ -1,10 +1,9 @@
 import unittest
-import numpy as np
-
 from functools import partial
 
+import numpy as np
 from rl_exercises.environments import MarsRover
-from rl_exercises.week_4 import SARSAAgent, EpsilonGreedyPolicy
+from rl_exercises.week_4 import EpsilonGreedyPolicy, SARSAAgent
 
 
 class TestSARSA(unittest.TestCase):
@@ -44,7 +43,7 @@ class TestSARSA(unittest.TestCase):
         terminated, truncated = False, False
 
         while not (terminated or truncated):
-            action = agent.predict(state)
+            action = agent.predict_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
 
             next_action = agent.predict_action(state)
@@ -67,7 +66,7 @@ class TestSARSA(unittest.TestCase):
         terminated, truncated = False, False
 
         while not (terminated or truncated):
-            action = agent.predict(state)
+            action = agent.predict_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
 
             next_action = agent.predict_action(state)
