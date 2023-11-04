@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import Any, SupportsFloat
 
-import numpy as np
 import gymnasium
+import numpy as np
 
 
 class MarsRover(gymnasium.Env):
@@ -106,8 +106,14 @@ class MarsRover(gymnasium.Env):
         int
             Next state.
         """
-        # TODO Implement logic of getting next state
-        s_next = s
+        follow_action = self.rng.random() < p
+        if not follow_action:
+            # Reverse action
+            a = 1 - a
+
+        delta_s = -1 if a == 0 else 1
+        s_next = s + delta_s
+        s_next = max(min(s_next, len(S) - 1), 0)
         return s_next
 
     def get_transition_matrix(self, S: np.ndarray, A: np.ndarray, P: np.ndarray) -> np.ndarray:
@@ -130,7 +136,28 @@ class MarsRover(gymnasium.Env):
             action a and landing in state s_next.
         """
         T = np.zeros((len(S), len(A), len(S)))
-        # TODO Build transition matrix
+        for s in S:
+            for a in A:
+                s_next = self.get_next_state(s, a, S, p=1)
+                probability = P[s, a]
+                T[s, a, s_next] = probability
+
+        # T_ = np.ndarray(
+        #     [
+        #         [1, 0, 0, 0, 0],
+        #         [0, 1, 0, 0, 0],
+        #         [1, 0, 0, 0, 0],
+        #         [0, 0, 1, 0, 0],
+        #         [0, 1, 0, 0, 0],
+        #         [0, 0, 0, 1, 0],
+        #         [0, 0, 1, 0, 0],
+        #         [0, 0, 0, 0, 1],
+        #         [0, 0, 0, 1, 0],
+        #         [0, 0, 0, 0, 1],
+        #     ]
+        # ).reshape((len(S), len(A), len(S)))
+
+        # assert np.all(T == T_)
         return T
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None) -> tuple[Any, dict[str, Any]]:
