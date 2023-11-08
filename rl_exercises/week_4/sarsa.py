@@ -42,13 +42,13 @@ class SARSAAgent(AbstractAgent):
         # create Q structure
         self.Q: DefaultDict[int, np.ndarray] = defaultdict(lambda: np.zeros(self.n_actions))
 
-        self.policy = policy(self.Q, self.env)  # type: ignore
+        self.policy = policy(self.env)  # type: ignore
 
     def predict_action(self, state: np.array, info: dict = {}, evaluate: bool = False) -> Any:  # type: ignore # noqa
         """Predict the action for a given state"""
-        action = self.policy(self.Q, state, evaluate=evaluate)  # type: ignore
+        action = self.policy(self.Q, state, eval=evaluate)  # type: ignore
         info = {}
-        return action, info
+        return action
 
     def save(self, path: str) -> Any:  # type: ignore
         """Save the Q table
