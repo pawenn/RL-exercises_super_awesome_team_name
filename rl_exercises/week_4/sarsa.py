@@ -46,8 +46,8 @@ class SARSAAgent(AbstractAgent):
 
     def predict_action(self, state: np.array, info: dict = {}, evaluate: bool = False) -> Any:  # type: ignore # noqa
         """Predict the action for a given state"""
+        action = info
         action = self.policy(self.Q, state, eval=evaluate)  # type: ignore
-        info = {}
         return action
 
     def save(self, path: str) -> Any:  # type: ignore
@@ -72,7 +72,7 @@ class SARSAAgent(AbstractAgent):
         """
         self.Q = np.load(path)
 
-    def update(  # type: ignore
+    def update_agent(  # type: ignore
         self,
         transition: list[np.array],  # type: ignore
         next_action: int,
