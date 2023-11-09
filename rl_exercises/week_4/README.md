@@ -19,4 +19,4 @@ Use the [Hydra SMAC sweeper](https://github.com/automl/hydra-smac-sweeper.git) t
 
 ## Level 3
 ### Implementing TD($\lambda$)
-In the same format as the SARSA code, implement the TD($\lambda(n)$) algorithm on the [Gridcore environment](https://github.com/automl/TabularTempoRL/blob/master/grid_envs.py). Make $n$ a configurable parameter signifying the number of lookahead steps. Try to ablate the peformance for multiple values of $n$ and verify the theoretical claims in the lecture. 
+In the same format as the SARSA code, implement the TD($\lambda(n)$) algorithm on etiher the [Gridcore environment](https://github.com/automl/TabularTempoRL/blob/master/grid_envs.py), or the [Four Rooms environment](https://github.com/Farama-Foundation/Minigrid/blob/master/minigrid/envs/fourrooms.py). Make $n$ a configurable parameter signifying the number of lookahead steps. Try to ablate the peformance for multiple values of $n$ and verify the theoretical claims in the lecture. 
