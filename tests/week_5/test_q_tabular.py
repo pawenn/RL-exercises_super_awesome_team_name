@@ -20,9 +20,9 @@ class TestQLearningTabular(unittest.TestCase):
         state, info = env.reset()
         terminated, truncated = False, False
         while not (terminated or truncated):
-            action, info = q.predict(state, info)
+            action, info = q.predict_action(state, info)
             next_state, reward, terminated, truncated, info = env.step(action)
-            q.update((state, action, reward, next_state, (truncated or terminated), info))
+            q.update_agent((state, action, reward, next_state, (truncated or terminated), info))
             rewards.append(reward)
 
         self.assertAlmostEqual(sum(rewards), 10)
@@ -40,9 +40,9 @@ class TestQLearningTabular(unittest.TestCase):
         state, info = env.reset()
         terminated, truncated = False, False
         while not (terminated or truncated):
-            action, info = q.predict(state, info)
+            action, info = q.predict_action(state, info)
             next_state, reward, terminated, truncated, info = env.step(action)
-            q.update((state, action, reward, next_state, (truncated or terminated), info))
+            q.update_agent((state, action, reward, next_state, (truncated or terminated), info))
             rewards.append(reward)
 
         self.assertAlmostEqual(sum(rewards), 12)
