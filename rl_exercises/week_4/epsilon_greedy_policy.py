@@ -51,8 +51,7 @@ class EpsilonGreedyPolicy(object):
         if not eval and np.random.uniform(0, 1) < self.epsilon:
             return self.env.action_space.sample()
 
-        # Otherwise, get the argmax of the Q values -- Greedy Action
-        q_values = [Q[(state, action)] for action in range(self.env.action_space.n)]  # type: ignore
+        q_values = Q[state]
 
         action = np.argmax(q_values).item()
         return action
