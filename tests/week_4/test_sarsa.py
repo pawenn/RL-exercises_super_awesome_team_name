@@ -23,7 +23,7 @@ class TestSARSA(unittest.TestCase):
             action = agent.predict_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
 
-            next_action = agent.predict_action(state)
+            next_action = agent.predict_action(next_state)
 
             agent.update_agent((state, action, reward, next_state), next_action, (truncated or terminated))
             rewards.append(reward)
@@ -46,7 +46,7 @@ class TestSARSA(unittest.TestCase):
             action = agent.predict_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
 
-            next_action = agent.predict_action(state)
+            next_action = agent.predict_action(next_state)
 
             agent.update_agent((state, action, reward, next_state), next_action, (truncated or terminated))
             rewards.append(reward)
@@ -69,12 +69,12 @@ class TestSARSA(unittest.TestCase):
             action = agent.predict_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
 
-            next_action = agent.predict_action(state)
+            next_action = agent.predict_action(next_state)
 
             agent.update_agent((state, action, reward, next_state), next_action, (truncated or terminated))
             rewards.append(reward)
 
-        self.assertAlmostEqual(sum(rewards), 22)
+        self.assertAlmostEqual(sum(rewards), 20)
 
 
 if __name__ == "__main__":
