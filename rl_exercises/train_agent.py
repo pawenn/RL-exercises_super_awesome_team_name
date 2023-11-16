@@ -89,7 +89,7 @@ def train(cfg: DictConfig) -> float:
         state = next_state
 
         if terminated or truncated:
-            state = env.reset()
+            state, info = env.reset()
 
         if step % cfg.eval_every_n_steps == 0:
             eval_performance = evaluate(make_env(cfg.env_name, cfg.env_kwargs), agent, cfg.n_eval_episodes)
