@@ -161,7 +161,7 @@ class VFAQAgent(AbstractAgent):
         self.Q.load_state_dict(checkpoint["parameters"])  # type: ignore
         self.optimizer.load_state_dict(checkpoint["optimizer_state"])  # type: ignore
 
-    def update_agent(self, training_batch: list[np.array]) -> float:  # type: ignore
+    def update_agent(self, training_batch: list[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]) -> float:  # type: ignore
         """
         Value Function Update for a Batch of Transitions.
 
@@ -169,8 +169,9 @@ class VFAQAgent(AbstractAgent):
 
         Parameters
         ----------
-        training_batch : list[np.array]
+        training_batch : list[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
             Batch to train on
+            states, actions, rewards, next_states, dones, infos = training_batch
 
         Returns
         -------
