@@ -23,11 +23,12 @@ from tqdm import tqdm
 from functools import partial
 
 from rl_exercises.agent.abstract_agent import AbstractAgent
+from rl_exercises.agent.buffer import SimpleBuffer
 from rl_exercises.week_2 import PolicyIteration, ValueIteration
 from rl_exercises.week_4 import EpsilonGreedyPolicy as TabularEpsilonGreedyPolicy
 from rl_exercises.week_4 import SARSAAgent
 from rl_exercises.week_5 import TabularQAgent, VFAQAgent, EpsilonGreedyPolicy
-from rl_exercises.week_6 import DQN
+from rl_exercises.week_6 import DQN, ReplayBuffer
 from rl_exercises.week_7 import REINFORCE
 from rl_exercises.week_8 import EpsilonDecayPolicy, EZGreedyPolicy
 
@@ -66,16 +67,10 @@ def train(cfg: DictConfig) -> float:
         # TODO: add your agent options here
         raise NotImplementedError
 
-    # TODO: TE: this is not a smart way of doing this, why not import all buffers and handle like above?
-    # I know it's not ideal either because the imports aren't called explicitly, but at least we don't have to do this...
-    buffer_cls = getattr(rl_exercises.agent.buffer, cfg.buffer_cls, None)
-    if buffer_cls is None:
-        buffer_cls = getattr(rl_exercises.week_6, cfg.buffer_cls, None)
-    if buffer_cls is not None:
-        buffer = buffer_cls(**cfg.buffer_kwargs)
+    buffer_cls = eval(cfg.buffer_cls)
+    buffer = buffer_cls(**cfg.buffer_kwargs)
     state, info = env.reset()
 
-    num_episodes = 0
     for step in range(cfg.training_steps):
         action, info = agent.predict_action(state, info)
         next_state, reward, terminated, truncated, info = env.step(action)
