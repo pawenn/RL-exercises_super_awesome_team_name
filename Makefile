@@ -82,6 +82,9 @@ test-week-5:
 test-week-6:
 	$(PYTEST) ${TESTS_DIR}/week_6
 
+test-week-7:
+	$(PYTEST) ${TESTS_DIR}/week_7
+
 test-week-8:
 	$(PYTEST) ${TESTS_DIR}/week_8
 
