@@ -112,7 +112,7 @@ def train_sb3(env: gym.Env, cfg: DictConfig) -> float:
         Mean rewards
     """
     # Create agent
-    model = eval(cfg.agent_class)("MlpPolicy", env, verbose=cfg.verbose, tensorboard_log=cfg.log_dir, seed=cfg.seed)
+    model = eval(cfg.agent_class)("MlpPolicy", env, verbose=cfg.verbose, tensorboard_log=cfg.log_dir, seed=cfg.seed, **cfg.agent_kwargs)
 
     # Train agent
     model.learn(total_timesteps=cfg.total_timesteps)
@@ -121,7 +121,7 @@ def train_sb3(env: gym.Env, cfg: DictConfig) -> float:
     model.save(cfg.model_fn)
 
     # Evaluate
-    env = Monitor(gym.make(cfg.env_id))
+    env = Monitor(gym.make(cfg.env_id), filename="eval")
     means = evaluate(env, model, episodes=cfg.n_eval_episodes)
     performance = np.mean(means)
     return performance
@@ -197,7 +197,7 @@ def make_env(env_name: str, env_kwargs: dict = {}) -> gym.Env:
         env = FlatObsWrapper(env)
     else:
         env = gym.make(env_name, **env_kwargs)
-    env = Monitor(env, filename="logs.csv")
+    env = Monitor(env, filename="train")
     return env
 
 
