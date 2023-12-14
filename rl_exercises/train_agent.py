@@ -1,15 +1,18 @@
 # Ignore "imported but unused"
 # flake8: noqa: F401
 import os
+from gymnasium.core import Env
 import hydra
 from omegaconf import DictConfig
 import numpy as np
 from rich import print as printr
 import gymnasium as gym
 import rl_exercises
-from gymnasium.wrappers import TimeLimit
+from gymnasium.wrappers import TimeLimit, EnvCompatibility
 from minigrid.wrappers import FlatObsWrapper
 import warnings
+from hydra.utils import get_class
+from omegaconf import OmegaConf
 
 try:
     import compiler_gym
@@ -18,7 +21,7 @@ except:
 from stable_baselines3.common.monitor import Monitor
 from rl_exercises.environments import MarsRover
 from stable_baselines3 import SAC, PPO
-from typing import List
+from typing import Any, List, SupportsFloat
 from tqdm import tqdm
 from functools import partial
 
@@ -180,13 +183,23 @@ def make_env(env_name: str, env_kwargs: dict = {}) -> gym.Env:
         Instantiated env
     """
     if "compiler" in env_name:
+        from christmas_challenge.utils import SpaceWrapper, ActionWrapper
+
         benchmark = "cbench-v1/dijkstra"
-        env = gym.make(
+        env = compiler_gym.make(
             "llvm-autophase-ic-v0",
             benchmark=benchmark,
             reward_space="IrInstructionCountNorm",
-            apply_api_compatibility=True,
+            # apply_api_compatibility=True,
         )
+        env = EnvCompatibility(env)
+
+        # Pretend that we are using correct action and observation spaces to circumvent sb3's space checking
+        # ⚠ This is horrible and hacky, please do not adopt this. This does not guarantuee that anything is working.
+        env.action_space = SpaceWrapper(env.action_space, desired_space=gym.spaces.Discrete)
+        env.observation_space = SpaceWrapper(env.observation_space, desired_space=gym.spaces.Box)
+        env = ActionWrapper(env, int)
+
         env = TimeLimit(env, max_episode_steps=100)
     elif env_name == "MarsRover":
         env = MarsRover(**env_kwargs)
