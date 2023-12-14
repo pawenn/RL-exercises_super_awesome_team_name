@@ -10,6 +10,7 @@ class SpaceWrapper(gymnasium.Space):
     """A wrapper around a :code:`gym.spaces.Space` with additional functionality
     for action spaces.
     """
+
     @property
     def __class__(self):
         """Fake class"""
@@ -28,10 +29,11 @@ class SpaceWrapper(gymnasium.Space):
 
     def __getitem__(self, name: str):
         return self.wrapped[name]
-    
-    
+
+
 class ActionWrapper(gymnasium.Wrapper):
     """Convert action to the target type"""
+
     def __init__(self, env: Env, target_type: type) -> None:
         super().__init__(env)
         self.target_type = target_type

@@ -115,7 +115,9 @@ def train_sb3(env: gym.Env, cfg: DictConfig) -> float:
         Mean rewards
     """
     # Create agent
-    model = eval(cfg.agent_class)("MlpPolicy", env, verbose=cfg.verbose, tensorboard_log=cfg.log_dir, seed=cfg.seed, **cfg.agent_kwargs)
+    model = eval(cfg.agent_class)(
+        "MlpPolicy", env, verbose=cfg.verbose, tensorboard_log=cfg.log_dir, seed=cfg.seed, **cfg.agent_kwargs
+    )
 
     # Train agent
     model.learn(total_timesteps=cfg.total_timesteps)

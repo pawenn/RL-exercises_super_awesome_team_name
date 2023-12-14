@@ -44,9 +44,8 @@ instance space. Train on one instance and on all instances and compare performan
 The best performing team presents and gets a bonus point.🙂
 
 ## Installation
-⚠ Consider creating a new environment, maybe using the `environment.yaml` file.
-
 For this challenge you need to install `compiler_gym` which you can do with
+
 ```bash
 pip install -U compiler_gym
 ```
