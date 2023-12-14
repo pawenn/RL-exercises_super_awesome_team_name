@@ -23,7 +23,8 @@ To check that your agent actually learns something, evaluate a random policy and
 (1 bonus point)
 
 ### Level 2
-Evaluate your agent on the complete benchmark to determine generalization performance and plot accordingly, e.g. using box plots or `rliable`.
+Optimize hyperparameters for generalization performance on the complete benchmark.
+Evaluate your agent on the complete benchmark to determine generalization performance and plot your final agent accordingly, e.g. using box plots or `rliable`.
 The benchmarks are listed in the cbench-v1.txt file.
 You can find other benchmarks [here](https://compilergym.com/llvm/index.html#datasets).
 Remember to evaluate agents trained on different seeds.
@@ -35,9 +36,9 @@ Beat the leaderboard on [leaderboard](https://github.com/facebookresearch/Compil
 
 --OR--
 
-Optimize for generalization performance on the complete benchmark. Either optimize hyperparameters or use contextual RL 
-with our benchmark library [CARL](https://github.com/automl/CARL). For this, create a CARLCompilerGymEnv and define the
-instance space. Train on one instance and on all instances and compare performance. (1 bonus point)
+Optimize for generalization performance on the complete benchmark. Use contextual RL 
+with our benchmark library [CARL](https://github.com/automl/CARL). For this, create a CARLCompilerGymEnv and define the instance space.
+Train on one instance and on all instances and compare performance. (1 bonus point)
 
 
 ## Presentation
