@@ -1,39 +1,40 @@
 # Ignore "imported but unused"
 # flake8: noqa: F401
 import os
-from gymnasium.core import Env
-import hydra
-from omegaconf import DictConfig
-import numpy as np
-from rich import print as printr
-import gymnasium as gym
-import rl_exercises
-from gymnasium.wrappers import TimeLimit, EnvCompatibility
-from minigrid.wrappers import FlatObsWrapper
 import warnings
+
+import gymnasium as gym
+import hydra
+import numpy as np
+import rl_exercises
+from gymnasium.core import Env
+from gymnasium.wrappers import EnvCompatibility, TimeLimit
 from hydra.utils import get_class
-from omegaconf import OmegaConf
+from minigrid.wrappers import FlatObsWrapper
+from omegaconf import DictConfig, OmegaConf
+from rich import print as printr
 
 try:
     import compiler_gym
-except:
+except:  # noqa: E722
     warnings.warn("Could not import compiler_gym. Probably it is not installed.")
-from stable_baselines3.common.monitor import Monitor
-from rl_exercises.environments import MarsRover
-from stable_baselines3 import SAC, PPO
 from typing import Any, List, SupportsFloat
-from tqdm import tqdm
+
 from functools import partial
 
 from rl_exercises.agent.abstract_agent import AbstractAgent
 from rl_exercises.agent.buffer import SimpleBuffer
+from rl_exercises.environments import MarsRover
 from rl_exercises.week_2 import PolicyIteration, ValueIteration
 from rl_exercises.week_4 import EpsilonGreedyPolicy as TabularEpsilonGreedyPolicy
 from rl_exercises.week_4 import SARSAAgent
-from rl_exercises.week_5 import TabularQAgent, VFAQAgent, EpsilonGreedyPolicy
+from rl_exercises.week_5 import EpsilonGreedyPolicy, TabularQAgent, VFAQAgent
 from rl_exercises.week_6 import DQN, ReplayBuffer
 from rl_exercises.week_7 import REINFORCE
 from rl_exercises.week_8 import EpsilonDecayPolicy, EZGreedyPolicy
+from stable_baselines3 import PPO, SAC
+from stable_baselines3.common.monitor import Monitor
+from tqdm import tqdm
 
 
 @hydra.main("configs", "base", version_base="1.1")  # type: ignore[misc]
@@ -80,7 +81,9 @@ def train(cfg: DictConfig) -> float:
 
         buffer.add(state, action, reward, next_state, (truncated or terminated), info)
 
-        if len(buffer) > cfg.batch_size or (cfg.update_after_episode_end and (terminated or truncated)):
+        if len(buffer) > cfg.batch_size or (
+            cfg.update_after_episode_end and (terminated or truncated)
+        ):
             batch = buffer.sample(cfg.batch_size)
             agent.update_agent(batch)
 
@@ -90,7 +93,9 @@ def train(cfg: DictConfig) -> float:
             state, info = env.reset()
 
         if step % cfg.eval_every_n_steps == 0:
-            eval_performance = evaluate(make_env(cfg.env_name, cfg.env_kwargs), agent, cfg.n_eval_episodes)
+            eval_performance = evaluate(
+                make_env(cfg.env_name, cfg.env_kwargs), agent, cfg.n_eval_episodes
+            )
             print(f"Eval reward after {step} steps was {eval_performance}.")
 
     agent.save(str(os.path.abspath("model.csv")))
@@ -116,7 +121,12 @@ def train_sb3(env: gym.Env, cfg: DictConfig) -> float:
     """
     # Create agent
     model = eval(cfg.agent_class)(
-        "MlpPolicy", env, verbose=cfg.verbose, tensorboard_log=cfg.log_dir, seed=cfg.seed, **cfg.agent_kwargs
+        "MlpPolicy",
+        env,
+        verbose=cfg.verbose,
+        tensorboard_log=cfg.log_dir,
+        seed=cfg.seed,
+        **cfg.agent_kwargs,
     )
 
     # Train agent
@@ -163,7 +173,12 @@ def evaluate(env: gym.Env, agent: AbstractAgent, episodes: int = 100) -> float:
             episode_steps += 1
             if terminated or truncated:
                 done = True
-                pbar.set_postfix({"episode reward": episode_rewards[-1], "episode step": episode_steps})
+                pbar.set_postfix(
+                    {
+                        "episode reward": episode_rewards[-1],
+                        "episode step": episode_steps,
+                    }
+                )
         pbar.update(1)
     env.close()
     return np.mean(episode_rewards)
@@ -185,7 +200,7 @@ def make_env(env_name: str, env_kwargs: dict = {}) -> gym.Env:
         Instantiated env
     """
     if "compiler" in env_name:
-        from christmas_challenge.utils import SpaceWrapper, ActionWrapper
+        from christmas_challenge.utils import ActionWrapper, SpaceWrapper
 
         benchmark = "cbench-v1/dijkstra"
         env = compiler_gym.make(
@@ -198,8 +213,12 @@ def make_env(env_name: str, env_kwargs: dict = {}) -> gym.Env:
 
         # Pretend that we are using correct action and observation spaces to circumvent sb3's space checking
         # ⚠ This is horrible and hacky, please do not adopt this. This does not guarantuee that anything is working.
-        env.action_space = SpaceWrapper(env.action_space, desired_space=gym.spaces.Discrete)
-        env.observation_space = SpaceWrapper(env.observation_space, desired_space=gym.spaces.Box)
+        env.action_space = SpaceWrapper(
+            env.action_space, desired_space=gym.spaces.Discrete
+        )
+        env.observation_space = SpaceWrapper(
+            env.observation_space, desired_space=gym.spaces.Box
+        )
         env = ActionWrapper(env, int)
 
         env = TimeLimit(env, max_episode_steps=100)

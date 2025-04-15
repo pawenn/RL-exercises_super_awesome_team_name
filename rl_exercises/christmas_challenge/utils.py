@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from typing import Any, SupportsFloat
+
+import compiler_gym
 import gymnasium
 from gymnasium.core import Env
-import compiler_gym
 
 
 class SpaceWrapper(gymnasium.Space):
@@ -16,7 +17,9 @@ class SpaceWrapper(gymnasium.Space):
         """Fake class"""
         return self.desired_space
 
-    def __init__(self, space: compiler_gym.spaces.ActionSpace, desired_space: gymnasium.Space) -> None:
+    def __init__(
+        self, space: compiler_gym.spaces.ActionSpace, desired_space: gymnasium.Space
+    ) -> None:
         """Constructor.
 
         :param space: The space that this action space wraps.
@@ -38,7 +41,9 @@ class ActionWrapper(gymnasium.Wrapper):
         super().__init__(env)
         self.target_type = target_type
 
-    def step(self, action: Any) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
+    def step(
+        self, action: Any
+    ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
         """Convert action to target type before stepping env"""
         action = self.target_type(action)
         return super().step(action)

@@ -9,11 +9,11 @@ SOURCE_DIR := ${PACKAGE_NAME}
 DIST := dist
 TESTS_DIR := tests
 
-.PHONY: help install-dev check format pre-commit clean clean-build build publish test
+.PHONY: help install check format pre-commit clean clean-build build publish test
 
 help:
 	@echo "Makefile ${NAME}"
-	@echo "* install-dev      to install all dev requirements and install pre-commit"
+	@echo "* install      	  to install all equirements and install pre-commit"
 	@echo "* clean            to clean any doc or build files"
 	@echo "* check            to check the source code for issues"
 	@echo "* format           to format the code with black and isort"
@@ -23,43 +23,28 @@ help:
 	@echo "* test             to run the tests"
 
 PYTHON ?= python
-PYTEST ?= python -m pytest
-PIP ?= python -m pip
+PYTEST ?= uv run pytest
+PIP ?= uv pip
 MAKE ?= make
-BLACK ?= black
-PYDOCSTYLE ?= pydocstyle
-MYPY ?= mypy
-PRECOMMIT ?= pre-commit
-FLAKE8 ?= flake8
+PRECOMMIT ?= uv run pre-commit
+RUFF ?= uv run ruff
 
-install-dev:
+install:
 	$(PIP) install -e ".[dev]"
 	pre-commit install
 
-check-black:
-	$(BLACK) ${SOURCE_DIR} --check || :
-	$(BLACK) ${TESTS_DIR} --check || :
-
-check-pydocstyle:
-	$(PYDOCSTYLE) ${SOURCE_DIR} || :
-
-check-mypy:
-	$(MYPY) ${SOURCE_DIR} || :
-
-check-flake8:
-	$(FLAKE8) ${SOURCE_DIR} || :
-	$(FLAKE8) ${TESTS_DIR} || :
-
-check: check-black check-mypy check-flake8 check-pydocstyle
+check: 
+	$(RUFF) format --check rl_exercises tests
+	$(RUFF) check rl_exercises tests
 
 pre-commit:
 	$(PRECOMMIT) run --all-files
 
-format-black:
-	$(BLACK) ${SOURCE_DIR}
-	$(BLACK) ${TESTS_DIR}
-
-format: format-black
+format: 
+	uv run isort rl_exercises tests
+	$(RUFF) format --silent rl_exercises tests
+	$(RUFF) check --fix --silent rl_exercises tests --exit-zero
+	$(RUFF) check --fix rl_exercises tests --exit-zero
 
 test:
 	$(PYTEST) ${TESTS_DIR}
@@ -94,7 +79,7 @@ clean-build:
 
 # Build a distribution in ./dist
 build:
-	$(PYTHON) setup.py sdist
+	uv build
 
 # Clean up any builds in ./dist as well as doc, if present
 clean: clean-build 

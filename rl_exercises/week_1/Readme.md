@@ -5,9 +5,9 @@ We train and optimize a BipedalWalker (gymnasium) using a Soft Actor-Critic (SAC
 For this we provide a notebook and a training script you are welcome to checkout.
 
 ## Train
-If you want to use the traininc script, activate your conda env and run the following in this dir:
+If you want to use the traininc script, activate your conda env and run the following in this dir (be advised, this will take quite a bit of time!):
 ```bash
-python train.py
+python train_sac.py
 ```
 Check out the folder `configs` for possible parameters. You can read [here](https://hydra.cc/docs/advanced/override_grammar/basic/) how to set parameters via the commandline.
 
@@ -17,7 +17,7 @@ tensorboard --logdir .
 ```
 
 ## Replay
-See the notebook.
+The notebook lets you do the same training, but inspect it closer. I will take some time again, but if you want to know a bit more about the code it can be a nice intro. Understanding it is not required at all at this point, however.
 
 
 # Exercise

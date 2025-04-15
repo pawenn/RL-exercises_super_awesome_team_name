@@ -1,9 +1,45 @@
 # For TOML reference
 # https://learnxinyminutes.com/docs/toml/
 
-[tool.black]
-target-version = ['py38']
-line-length = 120
+[project]
+name = "RL_exercises"
+version = "2025"
+description = "Exercises for the 2025 RL course at LUHAI."
+authors = [{ name = "AutoRL@LUHAI", email = "a.mohan@ai.uni-hannover.de" }]
+readme = "README.md"
+requires-python = "~=3.11"
+license = { file = "LICENSE" }
+keywords = [
+  "Reinforcement Learning",
+]
+
+dependencies = [
+        "numpy",
+        "gymnasium[box2d]",
+        "torch",
+        "tqdm",
+        "matplotlib",
+        "minigrid",
+        "seaborn",
+        "pandas",
+        "rich",
+        "jupyterlab",
+        "tensorboard",
+        "hydra-core",
+        "hydra-submitit-launcher",
+        "hydra-colorlog",
+        "stable-baselines3",
+        "moviepy",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=4.6",
+        "pytest-cov",
+        "pytest-xdist",
+        "pytest-timeout",
+        "ruff",
+        "pre-commit",
+        "isort"]
 
 [tool.isort]
 py_version = "38"
@@ -42,20 +78,11 @@ add-ignore = [ # http://www.pydocstyle.org/en/stable/error_codes.html
     "D415", # First line should end with a period, question mark, or exclamation point
 ]
 
-[tool.mypy]
-python_version = "3.8"
-show_error_codes = true
-warn_unused_configs = true         # warn about unused [tool.mypy] lines
-follow_imports = "normal"          # Type check top level api code we use from imports
-ignore_missing_imports = false     # prefer explicit ignores
-disallow_untyped_defs = true       # All functions must have types
-disallow_untyped_decorators = true # ... even decorators
-disallow_incomplete_defs = true    # ... all types
+[tool.ruff]
+extend-exclude = []
 
-[[tool.mypy.overrides]]
-module = ["setuptools.*"]     # Add modules that give import errors here
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["tests.*"]                # pytest uses decorators which are not typed in 3.8
-disallow_untyped_decorators = false # decorators in testing are not all annotated
+[tool.ruff.lint]
+ignore = [
+  # Conflicts with the formatter
+  "COM812", "ISC001"
+]

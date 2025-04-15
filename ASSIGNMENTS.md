@@ -2,6 +2,10 @@
 There are two possible workflows:
 1. Working in the assignment repo (and potentially copying over old soltions)
 2. Working in a master repo and pushing to different remotes
+Either way, autograding will test your solutions on GitHub. 
+If you don't want to wait for the online test, you can optionally run that same workflow locally with tools like [Act](https://nektosact.com/introduction.html) or from within your IDE as in [VS Code](https://sanjulaganepola.github.io/github-local-actions-docs/). 
+This is not mandatory and `make test` should behave the same, but it emulates the remote test case more closely in case you're worried about e.g. pathing.
+We recommend always running `make test` first.
 
 ## Workflow 1: Working in the assignment repo
 You don't need to do more than accepting the assignment and cloning the repo.

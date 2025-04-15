@@ -1,4 +1,5 @@
 """GridCore Env taken from https://github.com/automl/TabularTempoRL/"""
+
 from __future__ import annotations
 
 from typing import Any, SupportsFloat
@@ -116,7 +117,9 @@ class MarsRover(gymnasium.Env):
         s_next = max(min(s_next, len(S) - 1), 0)
         return s_next
 
-    def get_transition_matrix(self, S: np.ndarray, A: np.ndarray, P: np.ndarray) -> np.ndarray:
+    def get_transition_matrix(
+        self, S: np.ndarray, A: np.ndarray, P: np.ndarray
+    ) -> np.ndarray:
         """Get transition matrix T
 
         Parameters
@@ -160,7 +163,9 @@ class MarsRover(gymnasium.Env):
         # assert np.all(T == T_)
         return T
 
-    def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None) -> tuple[Any, dict[str, Any]]:
+    def reset(
+        self, *, seed: int | None = None, options: dict[str, Any] | None = None
+    ) -> tuple[Any, dict[str, Any]]:
         """Reset the environment.
 
         The rover will always be set to position 2.
@@ -185,7 +190,9 @@ class MarsRover(gymnasium.Env):
 
         return observation, info
 
-    def step(self, action: int) -> tuple[int, SupportsFloat, bool, bool, dict[str, Any]]:
+    def step(
+        self, action: int
+    ) -> tuple[int, SupportsFloat, bool, bool, dict[str, Any]]:
         """Step the environment
 
         Executes an action and return next_state, reward and whether the environment is done (horizon reached).
@@ -208,7 +215,10 @@ class MarsRover(gymnasium.Env):
         self.current_steps += 1
 
         self.position = self.get_next_state(
-            s=self.position, a=action, S=self.states, p=self.transition_probabilities[self.position][action]
+            s=self.position,
+            a=action,
+            S=self.states,
+            p=self.transition_probabilities[self.position][action],
         )
 
         # Get reward

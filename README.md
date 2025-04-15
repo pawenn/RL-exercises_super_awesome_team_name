@@ -20,15 +20,15 @@ Lastly, in the root directory we have the files `train_agent.py` and `evaluate_a
 ## Installation
 1. Clone this repository:
     * ``git clone https://github.com/automl-edu/RL-exercises.git``
-2. Install the open-source-distribution [anaconda](https://www.anaconda.com/products/individual) (or miniconda or mamba).
-3. Create a new conda-environment:
-    * ``conda create -n rl_exercises python=3.10``
-4. Activate the new conda env:
-    * ``conda activate rl_exercises``
+2. Install the uv package manager:
+    * ``pip install uv``
+3. Create a new environment:
+    * ``uv venv --python 3.11``
+4. Activate the new env:
+    * ``source .venv/bin/activate``
 5. Install this repository:
-    * ``make install-dev``
-6. Install extra requirements:
-   * ``pip install -r requirements.txt`` 
+    * ``make install``
+
 
 ## Assignments
 For information on how to publish your solutions please see `ASSIGNMENTS.md`.
@@ -46,13 +46,3 @@ We use some packages and frameworks in these exercises you might not be familiar
 - [*PyTorch*](https://pytorch.org/) is what we use for deep RL later in the exercises. You likely won't need a deep knowledge of the package, but understanding the basic functionality is useful. They have a [DQN example for RL](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html) which is also the point in the lecture where we start using deep learning.
 - [*JupyterLab*](https://jupyter.org/) enables interactive coding. We will use this mainly for visualizing agent behaviour and performance.
 - Our [*Pre-commit conditions*](https://pre-commit.com/) contain good practice helpers for your code - including linting, formatting and typing. We're not trying to annoy you with these, we want to ensure a high code standard and encourage you to adopt general best practices. The command `make pre-commit` will check if you're ready to commit.
-
-
-
-## Installation of Solutions
-```bash
-
-git clone git@github.com:automl-edu/RL-exercises-solution.git solutions
-cd solutions
-pip install -e .
-```

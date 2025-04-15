@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Iterable, Tuple
+
 import numpy as np
-from typing import Tuple, Any, Dict, Iterable
 from gymnasium.core import ObsType, SupportsFloat
 
 # state, action, reward, next_state, terminated, truncated, info
@@ -14,7 +16,13 @@ class AbstractBuffer(ABC):
 
     @abstractmethod
     def add(
-        self, state: np.ndarray, action: int | float, reward: float, next_state: np.ndarray, done: bool, info: dict
+        self,
+        state: np.ndarray,
+        action: int | float,
+        reward: float,
+        next_state: np.ndarray,
+        done: bool,
+        info: dict,
     ) -> None:
         """Add transition to buffer.
 
@@ -63,7 +71,13 @@ class SimpleBuffer(AbstractBuffer):
         return 1
 
     def add(
-        self, state: np.ndarray, action: int | float, reward: float, next_state: np.ndarray, done: bool, info: dict
+        self,
+        state: np.ndarray,
+        action: int | float,
+        reward: float,
+        next_state: np.ndarray,
+        done: bool,
+        info: dict,
     ) -> None:
         """Add transition to buffer.
 

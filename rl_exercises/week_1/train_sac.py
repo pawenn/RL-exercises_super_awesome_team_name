@@ -1,10 +1,8 @@
-import hydra
-from omegaconf import DictConfig
-
-import numpy as np
-from rich import print as printr
-
 import gymnasium
+import hydra
+import numpy as np
+from omegaconf import DictConfig
+from rich import print as printr
 from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.monitor import Monitor
@@ -20,7 +18,13 @@ def main(cfg: DictConfig) -> float:
     env = gymnasium.make(cfg.env_id)
 
     # Create agent
-    model = SAC("MlpPolicy", env, verbose=cfg.verbose, tensorboard_log=cfg.log_dir, seed=cfg.seed)
+    model = SAC(
+        "MlpPolicy",
+        env,
+        verbose=cfg.verbose,
+        tensorboard_log=cfg.log_dir,
+        seed=cfg.seed,
+    )
 
     # Train agent
     model.learn(total_timesteps=cfg.total_timesteps)
