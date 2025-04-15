@@ -1,7 +1,13 @@
+import os
 import unittest
 
 
 class MyTestCase(unittest.TestCase):
+    def test_file_exists(self):
+        assert os.path.isfile("rl_exercises/members.txt"), (
+            "File members.txt does not exist!"
+        )
+
     def test_members(self):
         with open("rl_exercises/members.txt") as fh:
             lines = fh.readlines()

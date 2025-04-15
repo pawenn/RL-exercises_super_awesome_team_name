@@ -30,6 +30,7 @@ PRECOMMIT ?= uv run pre-commit
 RUFF ?= uv run ruff
 
 install:
+	$(PIP) install swig
 	$(PIP) install -e ".[dev]"
 	pre-commit install
 
