@@ -24,7 +24,7 @@ jobs:
   tests:
     name: testing
     if: github.actor != 'github-classroom[bot]'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     defaults:
       run:
         shell: bash -l {0}  # Default to using bash on all and load (-l) .bashrc which miniconda uses
