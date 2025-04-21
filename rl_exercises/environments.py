@@ -4,31 +4,38 @@ from __future__ import annotations
 
 from typing import Any, SupportsFloat
 
-import gymnasium
+import gymnasium as gym
 import numpy as np
 
 
-class MarsRover(gymnasium.Env):
-    """Simple Environment for a Mars Rover that can move in a 1D Space
+class MarsRover(gym.Env):
+    """
+    Simple Environment for a Mars Rover that can move in a 1D Space.
+
+    The rover starts at position 2 and moves left or right based on discrete actions.
+    The environment is stochastic: with a probability defined by a transition matrix,
+    the action may be flipped. Each cell has an associated reward.
 
     Actions
     -------
-    Discrete, 2:
+    Discrete(2):
     - 0: go left
     - 1: go right
 
     Observations
     ------------
-    The current position of the rover (int).
+    Discrete(n): The current position of the rover (int).
 
     Reward
     ------
-    Certain amount per field.
+    Depends on the resulting cell after action is taken.
 
     Start/Reset State
     -----------------
-    Position 2.
+    Always starts at position 2.
     """
+
+    metadata = {"render_modes": ["human"]}
 
     def __init__(
         self,
@@ -37,196 +44,305 @@ class MarsRover(gymnasium.Env):
         horizon: int = 10,
         seed: int | None = None,
     ):
-        """Init the environment
+        """
+        Initialize the Mars Rover environment.
 
         Parameters
         ----------
         transition_probabilities : np.ndarray, optional
-            [Nx2] Array for N positions and 2 actions each, by default np.ones((5, 2)).
-        rewards : list[float], optional
-            [Nx1] Array for rewards. rewards[pos] determines the reward for a given
-            position `pos`, by default [1, 0, 0, 0, 10].
+            A (num_states, 2) array specifying the probability of actions being followed.
+        rewards : list of float, optional
+            Rewards assigned to each position, by default [1, 0, 0, 0, 10].
         horizon : int, optional
-            Number of total steps for this environment until it is done (e.g. battery drained), by default 10.
+            Maximum number of steps per episode, by default 10.
+        seed : int or None, optional
+            Random seed for reproducibility, by default None.
         """
-        self.rng = np.random.default_rng(seed=seed)
+        self.rng = np.random.default_rng(seed)
 
-        self.rewards: list[float] = rewards
-        self.transition_probabilities: np.ndarray = transition_probabilities
-        self.current_steps: int = 0
-        self.horizon: int = horizon
-        self.position: int = 2
+        self.rewards = list(rewards)
+        self.P = np.array(transition_probabilities)
+        self.horizon = int(horizon)
+        self.current_steps = 0
+        self.position = 2  # start at middle
 
-        n = len(self.transition_probabilities)
-        self.observation_space = gymnasium.spaces.Discrete(n=n)
-        self.action_space = gymnasium.spaces.Discrete(n=2)
+        # spaces
+        n = self.P.shape[0]
+        self.observation_space = gym.spaces.Discrete(n)
+        self.action_space = gym.spaces.Discrete(2)
 
-        self.states = np.arange(0, n)
-        self.actions = np.arange(0, 2)
-        self.transition_matrix = self.T = self.get_transition_matrix(
-            S=self.states, A=self.actions, P=self.transition_probabilities
-        )
+        # helpers
+        self.states = np.arange(n)
+        self.actions = np.arange(2)
 
-    def get_reward_per_action(self) -> np.ndarray:
-        """Determine the reward per action.
-
-        Returns
-        -------
-        np.ndarray
-            Reward per action as a |S|x|A| matrix.
-        """
-        R_sa = np.zeros((len(self.states), len(self.actions)))  # same shape as P
-        for s in range(R_sa.shape[0]):
-            for a in range(R_sa.shape[1]):
-                delta_s = -1 if a == 0 else 1
-                s_index = max(0, min(len(self.states) - 1, s + delta_s))
-                R_sa[s, a] = self.rewards[s_index]
-
-        return R_sa
-
-    def get_next_state(self, s: int, a: int, S: np.ndarray, p: float = 1) -> int:
-        """Get next state for deterministic action.
-
-        - The action will always be followed = deterministic
-        - Translate action into delta s
-        - Respect limits of the environment (min and max state).
-
-        Parameters
-        ----------
-        s : int
-            Current state.
-        a : int
-            Action.
-        S : np.ndarray, |S|
-            All states.
-        p : float
-            Probability that action a is followed, by default 1.
-
-        Returns
-        -------
-        int
-            Next state.
-        """
-        follow_action = self.rng.random() < p
-        if not follow_action:
-            # Reverse action
-            a = 1 - a
-
-        delta_s = -1 if a == 0 else 1
-        s_next = s + delta_s
-        s_next = max(min(s_next, len(S) - 1), 0)
-        return s_next
-
-    def get_transition_matrix(
-        self, S: np.ndarray, A: np.ndarray, P: np.ndarray
-    ) -> np.ndarray:
-        """Get transition matrix T
-
-        Parameters
-        ----------
-        S : np.ndarray, |S|
-            States
-        A : np.ndarray, |A|
-            Actions
-        P : np.ndarray, |S|x|A|
-            Transition probabilities. One entry P[s,a] means the probability of applying the
-            desired action a instead of the opposite action.
-
-        Returns
-        -------
-        np.ndarray, |S|x|A|x|S|
-            Transition matrix. T[s,a,s_next] means the probability of being in state s, applying
-            action a and landing in state s_next.
-        """
-        T = np.zeros((len(S), len(A), len(S)))
-        for s in S:
-            for a in A:
-                s_next = self.get_next_state(s, a, S, p=1)
-                probability = P[s, a]
-                T[s, a, s_next] = probability
-
-        # T_ = np.ndarray(
-        #     [
-        #         [1, 0, 0, 0, 0],
-        #         [0, 1, 0, 0, 0],
-        #         [1, 0, 0, 0, 0],
-        #         [0, 0, 1, 0, 0],
-        #         [0, 1, 0, 0, 0],
-        #         [0, 0, 0, 1, 0],
-        #         [0, 0, 1, 0, 0],
-        #         [0, 0, 0, 0, 1],
-        #         [0, 0, 0, 1, 0],
-        #         [0, 0, 0, 0, 1],
-        #     ]
-        # ).reshape((len(S), len(A), len(S)))
-
-        # assert np.all(T == T_)
-        return T
+        # transition matrix
+        self.transition_matrix = self.T = self.get_transition_matrix()
 
     def reset(
-        self, *, seed: int | None = None, options: dict[str, Any] | None = None
-    ) -> tuple[Any, dict[str, Any]]:
-        """Reset the environment.
-
-        The rover will always be set to position 2.
+        self,
+        *,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[int, dict[str, Any]]:
+        """
+        Reset the environment to its initial state.
 
         Parameters
         ----------
-        seed : int | None, optional
-            Seed, not used, by default None
-        options : dict[str, Any] | None, optional
-            Options, not used, by default None
+        seed : int, optional
+            Seed for environment reset (unused).
+        options : dict, optional
+            Additional reset options (unused).
 
         Returns
         -------
-        tuple[Any, dict[str, Any]]
-            Observation, info
+        state : int
+            Initial state (always 2).
+        info : dict
+            An empty info dictionary.
         """
         self.current_steps = 0
         self.position = 2
-
-        observation = self.position
-        info: dict = {}
-
-        return observation, info
+        return self.position, {}
 
     def step(
         self, action: int
     ) -> tuple[int, SupportsFloat, bool, bool, dict[str, Any]]:
-        """Step the environment
-
-        Executes an action and return next_state, reward and whether the environment is done (horizon reached).
+        """
+        Take one step in the environment.
 
         Parameters
         ----------
         action : int
-            Action. Has to be either 0 (go left) or 1 (go right).
+            Action to take (0: left, 1: right).
 
         Returns
         -------
-        tuple[int, SupportsFloat, bool, bool, dict[str, Any]]
-            Next state, reward, terminated, truncated, info.
+        next_state : int
+            The resulting position of the rover.
+        reward : float
+            The reward at the new position.
+        terminated : bool
+            Whether the episode ended due to task success (always False here).
+        truncated : bool
+            Whether the episode ended due to reaching the time limit.
+        info : dict
+            An empty dictionary.
         """
-        # Determine move given an action and transition probabilities for environment
         action = int(action)
-        if action not in [0, 1]:
+        if not self.action_space.contains(action):
             raise RuntimeError(f"{action} is not a valid action (needs to be 0 or 1)")
 
         self.current_steps += 1
 
-        self.position = self.get_next_state(
-            s=self.position,
-            a=action,
-            S=self.states,
-            p=self.transition_probabilities[self.position][action],
-        )
+        # stochastic flip with prob 1 - P[pos, action]
+        p = float(self.P[self.position, action])
+        follow = self.rng.random() < p
+        a_used = action if follow else 1 - action
 
-        # Get reward
-        reward = self.rewards[self.position]
+        delta = -1 if a_used == 0 else 1
+        self.position = max(0, min(self.states[-1], self.position + delta))
 
+        reward = float(self.rewards[self.position])
         terminated = False
         truncated = self.current_steps >= self.horizon
 
-        info: dict = {}
+        return self.position, reward, terminated, truncated, {}
 
-        return self.position, reward, terminated, truncated, info
+    def get_reward_per_action(self) -> np.ndarray:
+        """
+        Return the reward function R[s, a] for each (state, action) pair.
+
+        R[s, a] is the reward for the cell the rover would land in after taking action a in state s.
+
+        Returns
+        -------
+        R : np.ndarray
+            A (num_states, num_actions) array of rewards.
+        """
+        nS, nA = self.observation_space.n, self.action_space.n
+        R = np.zeros((nS, nA), dtype=float)
+        for s in range(nS):
+            for a in range(nA):
+                nxt = max(0, min(nS - 1, s + (-1 if a == 0 else 1)))
+                R[s, a] = float(self.rewards[nxt])
+        return R
+
+    def get_transition_matrix(
+        self,
+        S: np.ndarray | None = None,
+        A: np.ndarray | None = None,
+        P: np.ndarray | None = None,
+    ) -> np.ndarray:
+        """
+        Construct a deterministic transition matrix T[s, a, s'].
+
+        Parameters
+        ----------
+        S : np.ndarray, optional
+            Array of states. Uses internal states if None.
+        A : np.ndarray, optional
+            Array of actions. Uses internal actions if None.
+        P : np.ndarray, optional
+            Action success probabilities. Uses internal P if None.
+
+        Returns
+        -------
+        T : np.ndarray
+            A (num_states, num_actions, num_states) tensor where
+            T[s, a, s'] = probability of transitioning to s' from s via a.
+        """
+        if S is None or A is None or P is None:
+            S, A, P = self.states, self.actions, self.P
+
+        nS, nA = len(S), len(A)
+        T = np.zeros((nS, nA, nS), dtype=float)
+        for s in S:
+            for a in A:
+                s_next = max(0, min(nS - 1, s + (-1 if a == 0 else 1)))
+                T[s, a, s_next] = float(P[s, a])
+        return T
+
+    def render(self, mode: str = "human"):
+        """
+        Render the current state of the environment.
+
+        Parameters
+        ----------
+        mode : str
+            Render mode (only "human" is supported).
+        """
+        print(f"[MarsRover] pos={self.position}, steps={self.current_steps}")
+
+
+class MarsRoverPartialObsWrapper(gym.Wrapper):
+    """
+    Partially-observable wrapper for the MarsRover environment.
+
+    This wrapper injects observation noise to simulate partial observability.
+    With a specified probability, the true state (position) is replaced by a randomly
+    selected incorrect position in the state space.
+
+    Parameters
+    ----------
+    env : MarsRover
+        The fully observable MarsRover environment to wrap.
+    noise : float, default=0.1
+        Probability in [0, 1] of returning a random incorrect position.
+    seed : int or None, default=None
+        Optional RNG seed for reproducibility.
+    """
+
+    metadata = {"render_modes": ["human"]}
+
+    def __init__(self, env: MarsRover, noise: float = 0.1, seed: int | None = None):
+        """
+        Initialize the partial observability wrapper.
+
+        Parameters
+        ----------
+        env : MarsRover
+            The environment to wrap.
+        noise : float, optional
+            Probability of observing an incorrect state, by default 0.1.
+        seed : int or None, optional
+            Random seed for reproducibility, by default None.
+        """
+        super().__init__(env)
+        assert 0.0 <= noise <= 1.0, "noise must be in [0,1]"
+        self.noise = noise
+        self.rng = np.random.default_rng(seed)
+
+        self.observation_space = env.observation_space
+        self.action_space = env.action_space
+
+    def reset(
+        self,
+        *,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[int, dict[str, Any]]:
+        """
+        Reset the base environment and return a noisy observation.
+
+        Parameters
+        ----------
+        seed : int or None, optional
+            Seed for the reset, by default None.
+        options : dict or None, optional
+            Additional reset options, by default None.
+
+        Returns
+        -------
+        obs : int
+            The (possibly noisy) initial observation.
+        info : dict
+            Additional info returned by the environment.
+        """
+        true_obs, info = self.env.reset(seed=seed, options=options)
+        return self._noisy_obs(true_obs), info
+
+    def step(self, action: int) -> tuple[int, float, bool, bool, dict[str, Any]]:
+        """
+        Take a step in the environment and return a noisy observation.
+
+        Parameters
+        ----------
+        action : int
+            Action to take.
+
+        Returns
+        -------
+        obs : int
+            The (possibly noisy) resulting observation.
+        reward : float
+            The reward received.
+        terminated : bool
+            Whether the episode terminated.
+        truncated : bool
+            Whether the episode was truncated due to time limit.
+        info : dict
+            Additional information from the base environment.
+        """
+        true_obs, reward, terminated, truncated, info = self.env.step(action)
+        return self._noisy_obs(true_obs), reward, terminated, truncated, info
+
+    def _noisy_obs(self, true_obs: int) -> int:
+        """
+        Return a possibly noisy version of the true observation.
+
+        With probability `noise`, replaces the true observation with
+        a randomly selected incorrect state.
+
+        Parameters
+        ----------
+        true_obs : int
+            The true observation/state index.
+
+        Returns
+        -------
+        obs : int
+            A noisy (or true) observation.
+        """
+        if self.rng.random() < self.noise:
+            n = self.observation_space.n
+            others = [s for s in range(n) if s != true_obs]
+            return int(self.rng.choice(others))
+        else:
+            return int(true_obs)
+
+    def render(self, mode: str = "human"):
+        """
+        Render the current state of the environment.
+
+        Parameters
+        ----------
+        mode : str, optional
+            Render mode, by default "human".
+
+        Returns
+        -------
+        Any
+            Rendered output from the base environment.
+        """
+        return self.env.render(mode=mode)

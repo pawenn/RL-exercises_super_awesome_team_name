@@ -8,7 +8,7 @@ import hydra
 import numpy as np
 import rl_exercises
 from gymnasium.core import Env
-from gymnasium.wrappers import EnvCompatibility, TimeLimit
+from gymnasium.wrappers import TimeLimit
 from hydra.utils import get_class
 from minigrid.wrappers import FlatObsWrapper
 from omegaconf import DictConfig, OmegaConf
@@ -26,12 +26,13 @@ from rl_exercises.agent.abstract_agent import AbstractAgent
 from rl_exercises.agent.buffer import SimpleBuffer
 from rl_exercises.environments import MarsRover
 from rl_exercises.week_2 import PolicyIteration, ValueIteration
-from rl_exercises.week_4 import EpsilonGreedyPolicy as TabularEpsilonGreedyPolicy
-from rl_exercises.week_4 import SARSAAgent
-from rl_exercises.week_5 import EpsilonGreedyPolicy, TabularQAgent, VFAQAgent
-from rl_exercises.week_6 import DQN, ReplayBuffer
-from rl_exercises.week_7 import REINFORCE
-from rl_exercises.week_8 import EpsilonDecayPolicy, EZGreedyPolicy
+
+# from rl_exercises.week_4 import EpsilonGreedyPolicy as TabularEpsilonGreedyPolicy
+# from rl_exercises.week_4 import SARSAAgent
+# from rl_exercises.week_5 import EpsilonGreedyPolicy, TabularQAgent, VFAQAgent
+# from rl_exercises.week_6 import DQN, ReplayBuffer
+# from rl_exercises.week_7 import REINFORCE
+# from rl_exercises.week_8 import EpsilonDecayPolicy, EZGreedyPolicy
 from stable_baselines3 import PPO, SAC
 from stable_baselines3.common.monitor import Monitor
 from tqdm import tqdm
@@ -209,7 +210,6 @@ def make_env(env_name: str, env_kwargs: dict = {}) -> gym.Env:
             reward_space="IrInstructionCountNorm",
             # apply_api_compatibility=True,
         )
-        env = EnvCompatibility(env)
 
         # Pretend that we are using correct action and observation spaces to circumvent sb3's space checking
         # ⚠ This is horrible and hacky, please do not adopt this. This does not guarantuee that anything is working.
