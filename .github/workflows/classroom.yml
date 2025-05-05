@@ -23,8 +23,6 @@ env:
 jobs:
   tests:
     name: testing
-    if: github.actor != 'github-classroom[bot]'
-    runs-on: self-hosted
     defaults:
       run:
         shell: bash -l {0}  # Default to using bash on all and load (-l) .bashrc which miniconda uses
@@ -48,7 +46,7 @@ jobs:
             run: make install
     
           - name: Run tests
-            run: make test-week-1
+            run: make test-week-2
         
           - name: Autograding Reporter
             uses: classroom-resources/autograding-grading-reporter@v1
