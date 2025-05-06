@@ -132,5 +132,13 @@ class SARSAAgent(AbstractAgent):
         # Use a value of 0. for terminal states and
         # update the new Q value in the Q table of this class.
         # Return the new Q value --currently always returns 0.0
-
-        return 0.0
+        if done:
+            return self.Q[state][action]
+        else:
+            new_Q_value = self.Q[state][action] + self.alpha * (
+                reward
+                + self.gamma * self.Q[next_state][next_action]
+                - self.Q[state][action]
+            )
+            self.Q[state][action] = new_Q_value
+            return new_Q_value
