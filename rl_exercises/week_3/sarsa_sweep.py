@@ -4,9 +4,17 @@ This script uses Hydra to instantiate the environment, policy, and SARSA agent f
 then runs multiple episodes and returns the average total reward.
 """
 
+import logging
+
 import hydra
 from hydra.utils import instantiate
 from omegaconf import DictConfig
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+fh = logging.FileHandler("sarsa_sweep.log")
+fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logger.addHandler(fh)
 
 
 def run_episodes(agent, env, num_episodes=5):
@@ -35,18 +43,26 @@ def run_episodes(agent, env, num_episodes=5):
     # Extend it to run multiple episodes and store the total discounted rewards in a list.
     # Finally, return the mean discounted reward across episodes.
 
-    total = 0.0
-    state, _ = env.reset()
-    done = False
-    action = agent.predict_action(state)
-    while not done:
-        next_state, reward, term, trunc, _ = env.step(action)
-        done = term or trunc
-        next_action = agent.predict_action(next_state)
-        agent.update_agent(state, action, reward, next_state, next_action, done)
-        total += reward
-        state, action = next_state, next_action
-    return total
+    rewards = []
+
+    for episode in range(num_episodes):
+        # print("Episode {episode}")
+        total = 0.0
+        state, _ = env.reset()
+        done = False
+        action = agent.predict_action(state)
+        while not done:
+            # print(f"State: {state} action: {action}")
+            next_state, reward, term, trunc, _ = env.step(action)
+            done = term or trunc
+            next_action = agent.predict_action(next_state)
+            agent.update_agent(state, action, reward, next_state, next_action, done)
+            total += reward * agent.gamma**env.current_steps
+            state, action = next_state, next_action
+        rewards.append(total)
+    mean_reward = sum(rewards) / len(rewards)
+    # logger.info(f"Returned mean reward: {mean_reward}")
+    return mean_reward
 
 
 # Decorate the function with the path of the config file and the particular config to use
