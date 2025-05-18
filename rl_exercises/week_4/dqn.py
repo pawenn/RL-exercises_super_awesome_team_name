@@ -135,7 +135,12 @@ class DQNAgent(AbstractAgent):
         # ε = ε_final + (ε_start - ε_final) * exp(-total_steps / ε_decay)
         # Currently, it is constant and returns the starting value ε
 
-        return self.epsilon_start
+        decay_factor = np.exp(-self.total_steps / self.epsilon_decay)
+        exploration_rate = (
+            self.epsilon_final
+            + (self.epsilon_start - self.epsilon_final) * decay_factor
+        )
+        return exploration_rate
 
     def predict_action(
         self, state: np.ndarray, evaluate: bool = False
@@ -161,16 +166,21 @@ class DQNAgent(AbstractAgent):
         if evaluate:
             # TODO: select purely greedy action from Q(s)
             with torch.no_grad():
-                qvals = ...  # noqa: F841
+                qvals = self.q(torch.from_numpy(state))  # noqa: F841
 
-            action = None
+            action = int(qvals.argmax(dim=1).item())
         else:
             if np.random.rand() < self.epsilon():
                 # TODO: sample random action
-                action = None
+                action = self.env.action_space.sample()
             else:
                 # TODO: select purely greedy action from Q(s)
-                action = None
+                with torch.no_grad():
+                    qvals = self.q(torch.from_numpy(state))  # noqa: F841
+                    # print(f"Qvals dim: {qvals.shape}")
+                    # print(f"Qvals: {qvals}")
+
+                    action = int(qvals.argmax().item())
 
         return action
 
@@ -228,12 +238,29 @@ class DQNAgent(AbstractAgent):
         s_next = torch.tensor(np.array(next_states), dtype=torch.float32)  # noqa: F841
         mask = torch.tensor(np.array(dones), dtype=torch.float32)  # noqa: F841
 
+        # print(f"States shape: {s.shape}")
+        # print(f"Actions shape: {a.shape}")
         # # TODO: pass batched states through self.q and gather Q(s,a)
-        pred = ...
+
+        q_values = self.q(s)
+        pred = q_values.gather(1, a)
+        # print(f"Actions: {a}")
+        # print(f"pred shape: {pred.shape}")
+        # print(f"Q values: {q_values}")
+        # print(f"Choosen qvals: {pred}")
 
         # TODO: compute TD target with frozen network
         with torch.no_grad():
-            target = ...
+            # print(f"Rewards: {r}")
+            # print(f"Rewards shape: {r.shape}")
+            target_qvals = self.target_q(s_next)
+            # print(f"Target qvals: {target_qvals}")
+            max_target_qvals = target_qvals.max(dim=1).values
+            # print(f"Max Target qvals: {max_target_qvals}")
+
+            target = r + self.gamma * max_target_qvals
+
+        # print(f"Target: {target}")
 
         loss = nn.MSELoss()(pred, target)
 
@@ -276,7 +303,7 @@ class DQNAgent(AbstractAgent):
             # update if ready
             if len(self.buffer) >= self.batch_size:
                 # TODO: sample a batch from replay buffer
-                batch = ...
+                batch = self.buffer.sample(batch_size=self.batch_size)
                 _ = self.update_agent(batch)
 
             if done or truncated:
@@ -286,7 +313,7 @@ class DQNAgent(AbstractAgent):
                 # logging
                 if len(recent_rewards) % 10 == 0:
                     # TODO: compute avg over last eval_interval episodes and print
-                    avg = ...
+                    avg = sum(recent_rewards[-eval_interval:]) / eval_interval
                     print(
                         f"Frame {frame}, AvgReward(10): {avg:.2f}, ε={self.epsilon():.3f}"
                     )
@@ -301,8 +328,22 @@ def main(cfg: DictConfig):
     set_seed(env, cfg.seed)
 
     # 3) TODO: instantiate & train the agent
-    agent = ...
-    agent.train(...)
+    # agent = DQNAgent(env)
+
+    agent = DQNAgent(
+        env,
+        buffer_capacity=20,
+        batch_size=4,
+        lr=1e-2,
+        gamma=0.9,
+        epsilon_start=0.5,
+        epsilon_final=0.1,
+        epsilon_decay=10,
+        target_update_freq=5,
+        seed=0,
+    )
+
+    agent.train(num_frames=10000)
 
 
 if __name__ == "__main__":
