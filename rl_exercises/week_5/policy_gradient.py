@@ -163,7 +163,7 @@ class REINFORCEAgent(AbstractAgent):
         """
         # TODO: Pass state through the policy network to get action probabilities
         # If evaluate is True, return the action with highest probability
-        # Otherwise, sample from the action distribution and return the log-probability (Hint: use torch.distributions.Categorical)
+        # Otherwise, sample from the action distribution and return the log-probability as a key in the dictionary (Hint: use torch.distributions.Categorical)
         return 0, {}  # Placeholder return value
 
     def compute_returns(self, rewards: List[float]) -> torch.Tensor:
