@@ -1,4 +1,4 @@
-# Week 7: Policy Gradient
+# Week 5: Policy Gradient
 
 This week, you will implement your first policy-based reinforcement learning algorithm — REINFORCE — and conduct experiments to better understand when and why it performs better (or worse) than value-based methods like DQN.
 
