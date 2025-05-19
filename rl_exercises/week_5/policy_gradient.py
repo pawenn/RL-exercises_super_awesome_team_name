@@ -214,11 +214,12 @@ class REINFORCEAgent(AbstractAgent):
         # compute discounted returns
         returns_t = self.compute_returns(rewards)
 
-        # TODO: Compute Advantages as normalized returns, and add 1e-8 to avoid division by zero
-        advantages = returns_t
+        # TODO: Normalize returns with mean and standard deviation,
+        # and add 1e-8 to the denominator to avoid division by zero
+        norm_returns = returns_t
 
         lp_tensor = torch.stack(log_probs)
-        loss = -torch.sum(lp_tensor * advantages)
+        loss = -torch.sum(lp_tensor * norm_returns)
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -277,9 +278,12 @@ class REINFORCEAgent(AbstractAgent):
             Standard deviation of returns.
         """
         self.policy.eval()
-        returns: List[float] = []
-        # TODO: rollout num_episodes in eval_env and compute returns
-        # Return the mean and std of the returns
+        returns: List[float] = []  # noqa: F841
+        # TODO: rollout num_episodes in eval_env and aggregate undiscounted returns across episodes
+
+        self.policy.train()  # Set back to training mode
+
+        # TODO: Return the mean and std of the returns across episodes
         return 0.0, 0.0
 
     def train(
@@ -352,9 +356,21 @@ def main(cfg: DictConfig) -> None:
     env = gym.make(cfg.env.name)
     set_seed(env, cfg.seed)
 
-    # TODO: Instantiate agent with hyperparameters from config
+    # Instantiate agent with hyperparameters from config
+    agent = REINFORCEAgent(
+        env=env,
+        lr=cfg.agent.lr,
+        gamma=cfg.agent.gamma,
+        seed=cfg.seed,
+        hidden_size=cfg.agent.hidden_size,
+    )
 
-    # TODO: Train agent
+    # Train agent
+    agent.train(
+        num_episodes=cfg.train.episodes,
+        eval_interval=cfg.train.eval_interval,
+        eval_episodes=cfg.train.eval_episodes,
+    )
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ Wherever relevant, use [RLiable](https://github.com/google-research/rliable) for
 
 ## Level 1
 ### REINFORCE Implementation
-Complete the implementation in `policy_gradient.py` to train a stochastic policy using the REINFORCE algorithm. We’ve provided test cases to help you verify the correctness of your implementation. By default, this trains on `CartPole.v1`. You can change to to any environment of your choice from classic control suite.
+Complete the implementation in `policy_gradient.py` to train a stochastic policy using the REINFORCE algorithm. We’ve provided test cases to help you verify the correctness of your implementation. By default, this trains on `CartPole-v1`. You can change to to any environment of your choice from classic control suite.
 
 All relevant training configurations can be found in `configs/agent/reinforce.yaml`
 
@@ -25,12 +25,8 @@ Support your discussion with relevant plots and provide clear documentation of y
 ## Level 3
 ### When Does REINFORCE Beat DQN (and Vice Versa)?
 
-Design a controlled experimental setup to show one of the following:
+This exercise is intended to help you build a deeper intuition for when to use policy-based versus value-based reinforcement learning methods. Design a controlled experimental setup to show one of the following:
 - DQN outperforms REINFORCE
 - REINFORCE outperforms DQN
 
-You may either modify existing environments or create new ones for these experiments. Use RLiable to compare the performance of the two algorithms in your setup.
-
-Explain why your chosen setup favors one algorithm over the other, based on their underlying algorithmic principles (e.g., stochasticity handling, exploration, function approximation bias).
-
-This exercise is intended to help you build a deeper intuition for when to use policy-based versus value-based reinforcement learning methods.
+You may either modify existing environments or create new ones for these experiments. Use RLiable to compare the performance of the two algorithms in your setup. Explain why your chosen setup favors one algorithm over the other, based on their underlying algorithmic principles (e.g., stochasticity handling, exploration, function approximation bias). 
