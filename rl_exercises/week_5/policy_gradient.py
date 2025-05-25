@@ -10,6 +10,28 @@ from omegaconf import DictConfig
 from rl_exercises.agent import AbstractAgent
 
 
+class DummyEnv(gym.Env):
+    """
+    A trivial 1-state, 1-action env that always returns reward=1 and ends immediately.
+    Used to test evaluate() deterministically.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.observation_space = gym.spaces.Box(
+            low=0.0, high=1.0, shape=(1,), dtype=np.float32
+        )
+        self.action_space = gym.spaces.Discrete(1)
+
+    def reset(self, *, seed=None, **kwargs):
+        if seed is not None:
+            np.random.seed(seed)
+        return np.array([0.0], dtype=np.float32), {}
+
+    def step(self, action):
+        return np.array([0.0], dtype=np.float32), 1.0, True, False, {}
+
+
 def set_seed(env: gym.Env, seed: int = 0) -> None:
     """
     Seed random number generators for reproducibility.
@@ -72,6 +94,10 @@ class Policy(nn.Module):
         # TODO: Define two linear layers: self.fc1 and self.fc2
         # self.fc1 should map from self.state_dim to hidden_size
         # self.fc2 should map from hidden_size to self.n_actions
+        self.fc1 = nn.Linear(in_features=self.state_dim, out_features=hidden_size)
+        self.fc2 = nn.Linear(in_features=hidden_size, out_features=self.n_actions)
+        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -90,7 +116,13 @@ class Policy(nn.Module):
         # TODO: Apply fc1 followed by ReLU (Flatten input if needed)
         # TODO: Apply fc2 to get logits
         # TODO: Return softmax over logits along the last dimension
-        pass
+        if x.dim() == 1:
+            x = x.unsqueeze(0)
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        x = self.softmax(x)
+        return x
 
 
 class REINFORCEAgent(AbstractAgent):
@@ -164,7 +196,14 @@ class REINFORCEAgent(AbstractAgent):
         # TODO: Pass state through the policy network to get action probabilities
         # If evaluate is True, return the action with highest probability
         # Otherwise, sample from the action distribution and return the log-probability as a key in the dictionary (Hint: use torch.distributions.Categorical)
-        return 0, {}  # Placeholder return value
+        state = torch.from_numpy(state).float().unsqueeze(0)
+        if evaluate:
+            return torch.argmax(self.policy(state).squeeze(0)).item(), {}
+        else:
+            dist = torch.distributions.Categorical(probs=self.policy(state).squeeze(0))
+            action = dist.sample()
+            log_prob = dist.log_prob(action)
+            return action.item(), {"log_prob": log_prob}
 
     def compute_returns(self, rewards: List[float]) -> torch.Tensor:
         """
@@ -186,7 +225,12 @@ class REINFORCEAgent(AbstractAgent):
         #       - Update R = r + gamma * R
         #       - Insert R at the beginning of the returns list
         # TODO: Convert the list of returns to a torch.Tensor and return
-        pass
+        R = 0.0
+        returns = []
+        for r in reversed(rewards):
+            R = r + self.gamma * R
+            returns.insert(0, R)
+        return torch.tensor(returns, dtype=torch.float32)
 
     def update_agent(
         self,
@@ -213,10 +257,10 @@ class REINFORCEAgent(AbstractAgent):
 
         # compute discounted returns
         returns_t = self.compute_returns(rewards)
-
+        print(f"Returns: {returns_t}")
         # TODO: Normalize returns with mean and standard deviation,
         # and add 1e-8 to the denominator to avoid division by zero
-        norm_returns = returns_t
+        norm_returns = (returns_t - returns_t.mean()) / returns_t.std()
 
         lp_tensor = torch.stack(log_probs)
         loss = -torch.sum(lp_tensor * norm_returns)
@@ -352,6 +396,24 @@ def main(cfg: DictConfig) -> None:
             eval_interval: int
             eval_episodes: int
     """
+    env = DummyEnv()
+    agent = REINFORCEAgent(env, lr=1e-2, gamma=1.0, seed=0)
+
+    state = np.array([0.0], dtype=np.float32)
+    next_state = state.copy()
+    lp0 = torch.tensor(np.log(0.5), requires_grad=True)
+    lp1 = torch.tensor(np.log(0.25), requires_grad=True)
+    log_probs = [lp0, lp1]
+    rewards = [1.0, 0.0]
+    batch = [
+        (state, 0, rewards[i], next_state, True, {"log_prob": log_probs[i]})
+        for i in range(2)
+    ]
+    loss = agent.update_agent(batch)
+    expected = -lp0.item() + lp1.item()
+    print(f"Expected: {expected} loss: {loss}")
+
+    return
     # Initialize environment and seed
     env = gym.make(cfg.env.name)
     set_seed(env, cfg.seed)
