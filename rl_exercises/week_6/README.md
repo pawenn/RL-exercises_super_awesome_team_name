@@ -8,6 +8,8 @@ Throughout, use [RLiable](https://github.com/google-research/rliable) for plotti
 
 ## Level 1: On‑Policy Actor‑Critic Baselines
 
+In the first level, you will learn how to add baselines to the REINFORCE implementation from last week, and compare different baselines.
+
 ### Task
 1. Complete the implementation in `actor_critic.py` (the `ActorCriticAgent` class) to support all four baseline modes:
    - `none` (no baseline)
@@ -21,11 +23,13 @@ Throughout, use [RLiable](https://github.com/google-research/rliable) for plotti
    - Do some baselines learn faster or reach higher returns?
    - Provide a conceptual justification for any observed differences (e.g. variance reduction, bias–variance trade‑off).
 
-Training scripts and defaults live in `configs/agent/actor_critic.yaml`.
+Training scripts and defaults live in `configs/agent/actor_critic.yaml`. We provide test cases for this level.
 
 ---
 
 ## Level 2: Extending PPO
+
+In this level, you will implemnet PPO and try to get it wokring by implementing some of the many implementation details.
 
 ### Task
 1. Complete the TODOs in `ppo.py` to flesh out a working PPO agent with:
@@ -33,6 +37,7 @@ Training scripts and defaults live in `configs/agent/actor_critic.yaml`.
    - Value‑function loss coefficient (`vf_coef`)
    - Entropy bonus coefficient (`ent_coef`)
    - Mini‑batch training over multiple epochs
+
 
 2. Read the [blog post on PPO implementation nuances](https://iclr-blog-track.github.io/2022/03/25/ppo-implementation-details/) (e.g. learning‑rate annealing, KL‑early stopping, value clipping). Select **two** enhancements and integrate them into your PPO:
    - Clearly document and justify your choices in code comments.
@@ -47,6 +52,8 @@ Training defaults in `configs/agent/ppo.yaml`.
 ---
 
 ## Level 3: Continuous‑Action Control and SAC
+
+This level is all about understanding the nuances between PPO and SAC to gain a deeper understanding between their failure modes .
 
 ### Task
 1. Adapt your PPO implementation to work in continuous action spaces. Replace categorical policy with a Gaussian policy (mean + log‑std outputs).
