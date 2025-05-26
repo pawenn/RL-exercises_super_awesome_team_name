@@ -11,7 +11,7 @@ Throughout, use [RLiable](https://github.com/google-research/rliable) for plotti
 You will extend your REINFORCE agent to support baseline variants and analyze their impact on training performance.
 
 ### Task
-1. Complete the implementation in `actor_critic.py` (the `ActorCriticAgent` class) to support all four baseline modes:
+1. Complete the implementation in `actor_critic.py` and `networks.py` (the `ActorCriticAgent` class) to support all four baseline modes:
    - `none` (no baseline)
    - `avg` (running-average reward)
    - `value` (learned value function)
