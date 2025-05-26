@@ -15,7 +15,7 @@ Throughout, use [RLiable](https://github.com/google-research/rliable) for plotti
    - `value` (learned value function)
    - `gae` (Generalized Advantage Estimation)
 
-2. Train your agent on **CartPole‑v1** and **LunarLander‑v3**, comparing the four baselining strategies.
+2. Train your agent on **CartPole‑v1** and **LunarLander‑v3** (1 million steps are standard for **LunarLander‑v3**, but you can also run it for longer), comparing the four baselining strategies.
 3. Use RLiable to plot average return vs. steps (and confidence intervals) for each baseline.
 4. Analyze the results:
    - Do some baselines learn faster or reach higher returns?
@@ -62,4 +62,4 @@ Training defaults in `configs/agent/ppo.yaml`.
 
 Use stable‑baselines3 or spinup from DeepMind/OpenAI as reference implementations.  Cite any code you adapt.
 
-Good luck, and happy RL‑ing!
+Good luck!
