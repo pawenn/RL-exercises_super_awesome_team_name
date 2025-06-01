@@ -225,11 +225,14 @@ class REINFORCEAgent(AbstractAgent):
         #       - Update R = r + gamma * R
         #       - Insert R at the beginning of the returns list
         # TODO: Convert the list of returns to a torch.Tensor and return
+        print(f"Reward: {rewards} gamma: {self.gamma}")
         R = 0.0
         returns = []
         for r in reversed(rewards):
             R = r + self.gamma * R
+            print("R: ")
             returns.insert(0, R)
+        print(f"Result: {torch.tensor(returns, dtype=torch.float32)}")
         return torch.tensor(returns, dtype=torch.float32)
 
     def update_agent(
@@ -411,6 +414,7 @@ def main(cfg: DictConfig) -> None:
     ]
     loss = agent.update_agent(batch)
     expected = -lp0.item() + lp1.item()
+    print(f"-lp0: {-lp0.item()} lp1: {lp1.item()}")
     print(f"Expected: {expected} loss: {loss}")
 
     return
